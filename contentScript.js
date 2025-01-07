@@ -1,6 +1,7 @@
 (() => {
     let youtubeLeftControls, youtubePlayer;
     let currentVideo = "";
+    let currentVideoBookmarks = [];
     
     chrome.runtime.onMessage.addListener((obj, sender, response) => {
         const { type, value, videoId } = obj;
@@ -10,16 +11,14 @@
         }
     });
 
-
-
     const newVideoLoaded = () => {
         const bookmarkBtnExists = document.getElementsByClassName("bookmark-btn")[0];
         console.log(bookmarkBtnExists); 
 
         if (!bookmarkBtnExists) {
             const bookmarkBtn = document.createElement("img");
-            bookmarkBtn.src = chrome.runtime.getURL("assests/bookmark.png")
-            bookmarkBtn.classNmae = "ytp-button" + "bookmark-btn";
+            bookmarkBtn.src = chrome.runtime.getURL("assests/bookmark.png");
+            bookmarkBtn.className = "ytp-button" + "bookmark-btn";
             bookmarkBtn.title = "Click to bookmark current timestamp";
 
             youtubeLeftControls = document.getElementsByClassName("ytp-left-controls")[0];
@@ -29,7 +28,6 @@
             bookmarkBtn.addEventListener("click", addNewBookmarkEventHandler);
         }
     }
-    newVideoLoaded();
 
     const addNewBookmarkEventHandler = () => {
         const currentTime = youtubePlayer.currentTime;
@@ -37,11 +35,14 @@
             time: currentTime,
             desc: "Bookmark at" + getTime(currentTime),
         };
+        console.log(newBookmark);
 
         chrome.storage.sync.set({
             [currentVideo]: JSON.stringify([...currentVideoBookmarks, newBookmark].sort((a,b) => a.time - b.time))
         })
     }
+
+    newVideoLoaded();
 })();
 
 const getTime = t => {
